@@ -1,4 +1,10 @@
 version: "3.7"
+volumes:
+  data:
+    driver_opts:
+      type: "nfs"
+      o: "addr=192.168.100.87,nolock,soft,rw"
+      device: ":/mnt/data/resilio-sync"
 services:
   resilio-sync:
     image: linuxserver/resilio-sync
@@ -9,14 +15,14 @@ services:
       - TZ=Europe/London
       - UMASK_SET=<022>
     volumes:
-      - /mnt/sync/resilio-sync/config:/config
-      - /mnt/sync/resilio-sync/downloads:/downloads
-      - /mnt/sync/resilio-sync/sync/:/sync
+      - data:/config:/config
+      - data:/downloads:/downloads
+      - data:/sync/:/sync
     ports:
       - 8888:8888
       - 55555:55555
     networks:
-      - docker-compose-webserver_default
+       - internal_routeable
     labels:
       - traefik.enable=true
       - traefik.backend=resilo-sync
@@ -26,6 +32,9 @@ services:
       - traefik.55555.frontend.rule=Host:sync.leejonchapman.com
       - traefik.55555.port=55555
     restart: unless-stopped
+    deploy:
+      replicas: 1
 networks:
-  docker-compose-webserver_default:
+  internal_routeable:
+    name: internal_routeable
     external: true
