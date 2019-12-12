@@ -4,33 +4,35 @@ volumes:
     driver_opts:
       type: "nfs"
       o: "addr=192.168.100.87,nolock,soft,rw"
-      device: ":/mnt/data/resilio-sync"
+      device: ":/mnt/data/resilio-sync/config"
+  sync:
+    driver_opts:
+      type: "nfs"
+      o: "addr=192.168.100.87,nolock,soft,rw"
+      device: ":/mnt/data/resilio-sync/sync"
 services:
-  resilio-sync:
+  software:
     image: linuxserver/resilio-sync
-    container_name: resilio-sync
     environment:
       - PUID=1000
       - PGID=1000
       - TZ=Europe/London
       - UMASK_SET=<022>
     volumes:
-      - data:/config:/config
-      - data:/downloads:/downloads
-      - data:/sync/:/sync
+      - data:/config
+      - sync:/sync
     ports:
       - 8888:8888
-      - 55555:55555
     networks:
        - internal_routeable
     labels:
       - traefik.enable=true
       - traefik.backend=resilo-sync
-      - traefik.docker.network=web
-      - traefik.8888.frontend.rule=Host:sync.leejonchapman.com
-      - traefik.8888.port=8888
-      - traefik.55555.frontend.rule=Host:sync.leejonchapman.com
-      - traefik.55555.port=55555
+      - traefik.docker.network=internal_routeable
+      - traefik.web.frontend.rule=Host:sync.leejonchapman.com
+      - traefik.web.port=8888
+      - traefik.frontend.headers.SSLRedirect=true
+      - traefik.frontend.headers.SSLHost=sync.leejonchapman.com
     restart: unless-stopped
     deploy:
       replicas: 1
