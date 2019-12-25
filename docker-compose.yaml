@@ -1,0 +1,45 @@
+version: "3.7"
+volumes:
+  data:
+    driver_opts:
+      type: "nfs"
+      o: "addr=192.168.100.87,nolock,soft,rw"
+      device: ":/mnt/data/resilio-sync/config"
+  sync:
+    driver_opts:
+      type: "nfs"
+      o: "addr=192.168.100.87,nolock,soft,rw"
+      device: ":/mnt/data/resilio-sync/sync"
+services:
+  software:
+    image: linuxserver/resilio-sync
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/London
+      - UMASK_SET=<022>
+    volumes:
+      - data:/config
+      - sync:/sync
+    ports:
+      - 8888:8888
+    networks:
+       - internal
+    deploy:
+      labels:
+         traefik.enable: "true"
+         traefik.backend: "resilo-sync"
+         traefik.docker.network: "internal"
+         traefik.web.frontend.rule: "Host:sync.leejonchapman.com"
+         traefik.web.port: "8888"
+         traefik.frontend.headers.SSLRedirect: "true"
+         traefik.frontend.headers.SSLHost: "sync.leejonchapman.com"
+      placement:
+        constraints:
+          - node.role == worker
+      replicas: 1
+    restart: unless-stopped
+networks:
+  internal:
+    name: internal
+    external: true
