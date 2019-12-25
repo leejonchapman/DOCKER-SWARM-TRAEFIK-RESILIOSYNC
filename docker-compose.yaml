@@ -21,8 +21,6 @@ services:
     volumes:
       - data:/config
       - sync:/sync
-    ports:
-      - 8888:8888
     networks:
        - internal
     deploy:
