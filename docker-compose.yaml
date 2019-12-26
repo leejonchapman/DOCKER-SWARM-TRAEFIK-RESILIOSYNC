@@ -21,6 +21,8 @@ services:
     volumes:
       - data:/config
       - sync:/sync
+    ports:
+      - 8888:8888
     networks:
        - internal
     deploy:
@@ -35,8 +37,7 @@ services:
       placement:
         constraints:
           - node.role == worker
-      replicas: 1
-    restart: unless-stopped
+      mode: global
 networks:
   internal:
     name: internal
